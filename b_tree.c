@@ -12,20 +12,44 @@ typedef struct queue {
   int front, last;
 } que;
 
-void add_node(int user_key, node** root);
 node* search_btree(node *root, int user_key);
 void pre_order(node* node);
 void in_order(node* node);
 void post_order(node* node);
-void init_que(que* q);
+que *init_que();
 void add_to_que(que* q, node* n);
 void del_from_que(que* q);
 int isempty_que(que* q);
 void level_order(node* root);
 void del_node(node* root, int user_key);
-void del_node(node *root, int user_key);
+void add_node(int user_key, node* root);
 node* smallest_right(node *root);
-/*node* init_btree(int user_key) {
+node* init_btree(int user_key);
+
+int main() {
+  int i;
+  scanf("%d", &i);
+  node * test = init_btree(i);
+  while(i != -1) {
+    scanf("%d", &i);
+    add_node(i, test);
+  }
+  pre_order(test);
+  printf("\n");
+  in_order(test);
+  printf("\n");
+  post_order(test);
+  printf("\n");
+  level_order(test);
+  printf("\n");
+  scanf("%d", &i);
+  printf("\n");
+  del_node(test, i);
+    level_order(test);
+  return(0);
+}
+
+node* init_btree(int user_key) {
   node* root = (node *) malloc(sizeof(node));
   root->parent = NULL;
   root->left = NULL;
@@ -33,10 +57,30 @@ node* smallest_right(node *root);
   root->key = user_key;
 
   return (root);
-}*/
+}
+que* init_que() {
+  que* temp = (que *) malloc(sizeof(que));
+  temp->front = 1;
+  temp->last = 0;
 
-int main() {
-
+  return(temp);
+}
+void add_to_que(que* q, node* n) {
+  if(q->last < MAX - 1) {
+    q->last++;
+    q->mass[q->last] = n;
+  }
+  else printf("Too big tree, i`m sorry\n");
+}
+int isempty_que(que* q) {
+  if(q->last < q->front) return (1);
+  else return (0);
+}
+void del_from_que(que* q) {
+  if(isempty_que(q)) return;
+  for(int i = q->last; i > q->front; i--)
+    q->mass[i - 1] = q->mass[i];
+  q->last--;
 }
 node* search_btree(node *root, int user_key) {
   node* temp = root;
@@ -69,6 +113,7 @@ void del_node(node *root, int user_key) {
       else par->left = NULL;
     }
   }
+
   else if((!temp->right) && (temp->left)) {
     if(par) {
       if(par->key <= user_key) par->right = temp->left;
@@ -76,6 +121,7 @@ void del_node(node *root, int user_key) {
     }
     (temp->left)->parent = par;
   }
+
   else if((temp->right) && (!temp->left)) {
     if(par) {
       if(par->key <= user_key) par->right = temp->right;
@@ -83,47 +129,31 @@ void del_node(node *root, int user_key) {
     }
     (temp->right)->parent = par;
   }
+
   else {
     node *sm_r = smallest_right(temp);
-    temp->key = sm_r->key;
-    (sm_r->parent)->left = sm_r->right;
-    (sm_r->right)->parent = sm_r->parent;
-    temp = sm_r;
+    if(par) {
+      if(par->key <= user_key) par->right = sm_r;
+      else par->left = sm_r;
+      }
+
+    if(sm_r->parent == temp) sm_r->parent = par;
+    else {
+      (sm_r->parent)->left = sm_r->right;
+      (sm_r->right)->parent = sm_r->parent;
+    }
+    sm_r->left = temp->left;
   }
   free(temp);
   return;
 }
-void init_que(que* q) {
-  q->front = 1;
-  q->last = 0;
-}
-void add_to_que(que* q, node* n) {
-  if(q->last < MAX - 1) {
-    q->last++;
-    q->mass[q->last] = n;
-  }
-  else printf("Too big tree, i`m sorry\n");
-}
-int isempty_que(que* q) {
-  if(q->last < q->front) return (1);
-  else return (0);
-}
-void del_from_que(que* q) {
-  if(isempty_que(q)) return;
-  for(int i = q->last; i > q->front; i--)
-    q->mass[i - 1] = q->mass[i];
-  q->last--;
-}
-void add_node(int user_key, node** root) {
+void add_node(int user_key, node* root) {
   node* n = (node *) malloc(sizeof(node));
-  //*n = {NULL, NULL, NULL, user_key};
   n->parent = NULL;
   n->left = NULL;
   n->right = NULL;
   n->key = user_key;
-  if((*root)->parent == NULL) {*root = n; return;}
-
-  node *temp1, *temp2 = *root;
+  node *temp1, *temp2 = root;
 
   while(temp2 != NULL) {
     temp1 = temp2;
@@ -158,7 +188,7 @@ void post_order(node* node) {
 void level_order(node* root) {
   if(root == NULL) return;
   que *q;
-  init_que(q);
+  q = init_que();
 
   add_to_que(q, root);
 
