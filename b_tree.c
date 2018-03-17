@@ -27,7 +27,6 @@ void add_node(node* root, int user_key);
 node* smallest_right(node *root);
 node* init_btree(int user_key);
 void del_tree(node** n);
-int sch_level(node* root, int key);
 void my_cp1_func(node* root);////My own function
 
 int main() {
@@ -56,7 +55,8 @@ int main() {
     post_order(n);
         printf("\n");
     level_order(n);
-    //del_tree(&n);
+    del_tree(&n);
+    in_order(n);
 
     return (0);
 }
@@ -215,18 +215,6 @@ void level_order(node* root) {
     }
     free(q);
 }
-int sch_level(node* root, int key) {
-  int lvl = 0;
-  while(root->key != key) {
-      if(key >= root->key)
-          root = root->right;
-      else
-          root = root->left;
-      lvl++;
-  }
-
-  return (lvl + 1);
-}
 void my_cp1_func(node* root) {
     if(root == NULL) return;
     que *q = init_que();
@@ -238,18 +226,18 @@ void my_cp1_func(node* root) {
 
     while(!isempty_que(q)) {
         node *temp = q->mass[q->front];
+        int fr = q->front;
 
-        if(q->lvl[q->front] > level) {
+        if(q->lvl[fr] > level) {
           printf("%d  ", temp->key);
           sum += temp->key;
           level++;
         }
 
         if(temp->left != NULL)
-            add_to_que(q, temp->left, q->lvl[q->front] + 1);
+            add_to_que(q, temp->left, q->lvl[fr] + 1);
         if(temp->right != NULL)
-            add_to_que(q, temp->right, q->lvl[q->front] + 1);
-
+            add_to_que(q, temp->right, q->lvl[fr] + 1);
         del_from_que(q);
     }
     printf("Sum is: %d", sum);
@@ -261,4 +249,5 @@ void del_tree(node** n) {
     while((*n)->right)
         del_node((*n)->right, ((*n)->right)->key);
     free(*n);
+    *n = NULL;
 }
